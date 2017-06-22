@@ -1,7 +1,7 @@
 /*******************************************************************/
 /* Nombre: tempfan.c                                               */
 /* Descripcion: Control automático de ventilador segun temperatura */
-/* Autor: JRios													   */
+/* Autor: JRios                                                    */
 /* Fecha: 20/06/2017                                               */
 /* Version: 1.0.0                                                  */
 /*******************************************************************/
@@ -35,8 +35,8 @@ int main(void)
 	int temp_last, temp_now, diff_temp;
 	T_state state_last, state_now;
 	
-    wiringPiSetup();
-    softPwmCreate(PIN_PWM, 0, 1023);
+	wiringPiSetup();
+	softPwmCreate(PIN_PWM, 0, 1023);
 	
 	softPwmWrite(PIN_PWM, 0); // Ventilador apagado
 	state_now = OFF;
@@ -61,8 +61,8 @@ int main(void)
 	temp_last = temp_now; // Guardar la ultima lectura de temperatura (cuando se ha configurado el ventilador)
 	state_last = state_now;
  
-    while(1)
-    {
+	while(1)
+	{
 		temp_now = readTemp((char*)"/sys/class/thermal/thermal_zone1/temp"); // Leer temperatura
 		diff_temp = abs(temp_now - temp_last); // Calcular diferencia de temperatura
 		
