@@ -12,12 +12,13 @@
 #include <stdio.h>
 #include <unistd.h>
 
-// Las siguientes definiciones pueden modificarse a antojo del usuario (siempre y cuando se tengan en cuenta el efecto de los cambios)
-#define PIN_PWM   7   // Pin PWM numero 7 (PA6)
-#define DIFF_TEMP 2   // Diferencia de temperatura minima entre lecturas (2ºC)
-#define TEMP_LOW  55  // Valor umbral de temperatura bajo (55ºC)
-#define TEMP_HIGH 68  // Valor umbral de temperatura alto (68ºC)
-#define T_READS   5   // Tiempo de espera entre lecturas de temperatura (5s)
+// Definiciones (modificables a antojo del usuario)
+#define PIN_PWM   7                                       // Pin PWM numero 7 (PA6)
+#define DIFF_TEMP 2                                       // Diferencia de temperatura minima entre lecturas (2ºC)
+#define TEMP_LOW  55                                      // Valor umbral de temperatura bajo (55ºC)
+#define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC)
+#define T_READS   5                                       // Tiempo de espera entre lecturas de temperatura (5s)
+#define FILE_TEMP "/sys/class/thermal/thermal_zone0/temp" // Ruta y nombre del archivo de acceso a la temperatura
 
 /*******************************************************************/
 
@@ -42,7 +43,7 @@ int main(void)
 	state_now = OFF;
 	state_last = OFF;
 	
-	temp_now = readTemp((char*)"/sys/class/thermal/thermal_zone1/temp"); // Leer temperatura
+	temp_now = readTemp((char*)FILE_TEMP); // Leer temperatura
 	if((temp_now < TEMP_LOW) && (state_last != OFF)) // Temperatura menor que TEMP_LOW (55ºC) y estado anterior distinto
 	{
 		softPwmWrite(PIN_PWM, 0); // Ventilador apagado
@@ -63,7 +64,7 @@ int main(void)
  
 	while(1)
 	{
-		temp_now = readTemp((char*)"/sys/class/thermal/thermal_zone1/temp"); // Leer temperatura
+		temp_now = readTemp((char*)FILE_TEMP); // Leer temperatura
 		diff_temp = abs(temp_now - temp_last); // Calcular diferencia de temperatura
 		
 		if(diff_temp >= DIFF_TEMP) // Diferencia de temperatura mayor que DIFF_TEMP (2ºC)

@@ -24,7 +24,7 @@
 #define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC)
 #define T_READS   5                                       // Tiempo de espera entre lecturas de temperatura (5s)
 #define T_ALIVE   600                                     // Tiempo de espera entre escritura en el archivo Log, para determinar que el programa esta en ejecucion (600s -> 10m)
-#define FILE_TEMP "/sys/class/thermal/thermal_zone1/temp" // Ruta y nombre del archivo de acceso a la temperatura
+#define FILE_TEMP "/sys/class/thermal/thermal_zone0/temp" // Ruta y nombre del archivo de acceso a la temperatura
 #define FILE_LOG  "/var/log/tempfan.log"                  // Ruta y nombre de archivo Log
 #define LINE_SIZE 128                                     // Tamaño máximo de linea que puede ser escrita en el archivo Log
 #define MAX_LINES 1000                                    // Numero maximo de lineas que puede contener el archivo Log (1000 lineas)
