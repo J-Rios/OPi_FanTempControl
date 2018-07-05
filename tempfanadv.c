@@ -5,7 +5,7 @@
 /*              cambios de modos del ventilador mediante Log       */
 /* Autor: JRios                                                    */
 /* Fecha: 23/06/2017                                               */
-/* Version: 1.0.0                                                  */
+/* Version: 1.0.1                                                  */
 /*******************************************************************/
 
 // Librerias
@@ -146,6 +146,10 @@ int readTemp(const char* file_path)
         fclose(file); // Cerramos el archivo
     }
     
+	// Si la temperatura tiene 4 o más digitos, dividimos entre 1000 (por ejemplo, en OPi Zero, se leen esos valores)
+	if(temp >= 1000)
+		temp = temp/1000;
+	
     return temp; // Devolvemos el valor de temperatura leida
 }
 
