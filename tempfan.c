@@ -10,6 +10,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 // Definiciones (modificables a antojo del usuario)
