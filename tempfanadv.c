@@ -12,6 +12,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
@@ -26,7 +27,7 @@
 #define T_ALIVE   600                                     // Tiempo de espera entre escritura en el archivo Log, para determinar que el programa esta en ejecucion (600s -> 10m)
 #define FILE_TEMP "/sys/class/thermal/thermal_zone0/temp" // Ruta y nombre del archivo de acceso a la temperatura
 #define FILE_LOG  "/var/log/tempfan.log"                  // Ruta y nombre de archivo Log
-#define LINE_SIZE 128                                     // Tamaño máximo de linea que puede ser escrita en el archivo Log
+#define LINE_SIZE 256                                     // Tamaño máximo de linea que puede ser escrita en el archivo Log
 #define MAX_LINES 1000                                    // Numero maximo de lineas que puede contener el archivo Log (1000 lineas)
 
 /*******************************************************************/
@@ -69,14 +70,14 @@ int main(void)
     {
         softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
         state_now = SLOW; // Estado actual: Ventilador al 50%
-        sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
+        sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
         logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
     }
     else if(temp_now > TEMP_HIGH) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
     {
         softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
         state_now = FAST; // Estado actual: Ventilador al 100%
-        sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
+        sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
         logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
     }
     temp_last = temp_now; // Guardar la ultima lectura de temperatura (cuando se ha configurado el ventilador)
@@ -100,14 +101,14 @@ int main(void)
             {
                 softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
                 state_now = SLOW; // Estado actual: Ventilador al 50%
-                sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
+                sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
                 logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
             }
             else if((temp_now > TEMP_HIGH) && (state_last != FAST)) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
             {
                 softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
                 state_now = FAST; // Estado actual: Ventilador al 100%
-                sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
+                sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
                 logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
             }
             
