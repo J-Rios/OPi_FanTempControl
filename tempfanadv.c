@@ -5,7 +5,7 @@
 /*              cambios de modos del ventilador mediante Log       */
 /* Autor: JRios                                                    */
 /* Fecha: 23/06/2017                                               */
-/* Version: 1.0.1                                                  */
+/* Version: 1.0.2                                                  */
 /*******************************************************************/
 
 // Librerias
@@ -20,14 +20,17 @@
 
 // Definiciones (modificables a antojo del usuario)
 #define PIN_PWM   7                                       // Pin PWM numero 7 (PA6)
+#define PWM_MIN   0                                       // Valor PWM minimo
+#define PWM_MID   512                                     // Valor PWM intermedio [poner a 750 para Raspberry Pi]
+#define PWM_MAX   1023                                    // Valor PWM maximo
 #define DIFF_TEMP 2                                       // Diferencia de temperatura minima entre lecturas (2ºC)
-#define TEMP_LOW  55                                      // Valor umbral de temperatura bajo (55ºC)
-#define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC)
+#define TEMP_LOW  55                                      // Valor umbral de temperatura bajo (55ºC) [Poner a 50 para Raspberry Pi]
+#define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC) [Poner a 60 para Raspberry Pi]
 #define T_READS   5                                       // Tiempo de espera entre lecturas de temperatura (5s)
 #define T_ALIVE   600                                     // Tiempo de espera entre escritura en el archivo Log, para determinar que el programa esta en ejecucion (600s -> 10m)
 #define FILE_TEMP "/sys/class/thermal/thermal_zone0/temp" // Ruta y nombre del archivo de acceso a la temperatura
 #define FILE_LOG  "/var/log/tempfan.log"                  // Ruta y nombre de archivo Log
-#define LINE_SIZE 256                                     // Tamaño máximo de linea que puede ser escrita en el archivo Log
+#define LINE_SIZE 256                                     // Tamaño maximo de linea que puede ser escrita en el archivo Log
 #define MAX_LINES 1000                                    // Numero maximo de lineas que puede contener el archivo Log (1000 lineas)
 
 /*******************************************************************/
@@ -54,11 +57,11 @@ int main(void)
     logPrintln((char*)FILE_LOG, (char*)"Arrancando tempfan...\n"); // Escribimos en el archivo Log
     
     wiringPiSetup(); // Inicializamos la libreria WiringPi
-    softPwmCreate(PIN_PWM, 0, 1023); // Configuramos el pin "PIN_PWM" como salida PWM en el rango 0 - 1023
+    softPwmCreate(PIN_PWM, PWM_MIN, PWM_MAX); // Configuramos el pin "PIN_PWM" como salida PWM en el rango 0 - 1023
     
     logPrintln((char*)FILE_LOG, (char*)"GPIO configurado\n"); // Escribimos en el archivo Log
     
-    softPwmWrite(PIN_PWM, 0); // Ventilador apagado
+    softPwmWrite(PIN_PWM, PWM_MIN); // Ventilador apagado
     state_now = OFF; // Inicializamos el estado actual en OFF
     state_last = OFF; // Inicializamos el ultimo estado en OFF
     
@@ -68,14 +71,14 @@ int main(void)
     temp_now = readTemp((char*)FILE_TEMP); // Leer temperatura
     if((temp_now >= TEMP_LOW) && (temp_now <= TEMP_HIGH)) // Temperatura entre TEMP_LOW y TEMP_HIGH (55ºC - 70ºC) y estado anterior distinto
     {
-        softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
+        softPwmWrite(PIN_PWM, PWM_MID); // Ventilador al 50%
         state_now = SLOW; // Estado actual: Ventilador al 50%
         sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
         logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
     }
     else if(temp_now > TEMP_HIGH) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
     {
-        softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
+        softPwmWrite(PIN_PWM, PWM_MAX); // Ventilador al 100%
         state_now = FAST; // Estado actual: Ventilador al 100%
         sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
         logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
@@ -92,21 +95,21 @@ int main(void)
         {
             if((temp_now < TEMP_LOW) && (state_last != OFF)) // Temperatura menor que TEMP_LOW (55ºC) y estado anterior distinto
             {
-                softPwmWrite(PIN_PWM, 0); // Ventilador apagado
+                softPwmWrite(PIN_PWM, PWM_MIN); // Ventilador apagado
                 state_now = OFF; // Estado actual: Ventilador apagado
                 sprintf(log_writer, "Temperatura actual baja (%dºC), ventilador apagado\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
                 logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
             }
             else if(((temp_now >= TEMP_LOW) && (temp_now <= TEMP_HIGH)) && (state_last != SLOW)) // Temperatura entre TEMP_LOW y TEMP_HIGH (55ºC - 70ºC) y estado anterior distinto
             {
-                softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
+                softPwmWrite(PIN_PWM, PWM_MID); // Ventilador al 50%
                 state_now = SLOW; // Estado actual: Ventilador al 50%
                 sprintf(log_writer, "Temperatura actual intermedia (%dºC), ventilador al 50%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
                 logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
             }
             else if((temp_now > TEMP_HIGH) && (state_last != FAST)) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
             {
-                softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
+                softPwmWrite(PIN_PWM, PWM_MAX); // Ventilador al 100%
                 state_now = FAST; // Estado actual: Ventilador al 100%
                 sprintf(log_writer, "Temperatura actual alta (%dºC), ventilador al 100%%\n", temp_now); // Preparamos lo que se va a escribir en el archivo Log
                 logPrintln((char*)FILE_LOG, (char*)log_writer); // Escribimos en el archivo Log
@@ -147,10 +150,10 @@ int readTemp(const char* file_path)
         fclose(file); // Cerramos el archivo
     }
     
-	// Si la temperatura tiene 4 o más digitos, dividimos entre 1000 (por ejemplo, en OPi Zero, se leen esos valores)
-	if(temp >= 1000)
-		temp = temp/1000;
-	
+    // Si la temperatura tiene 4 o mas digitos, dividimos entre 1000 (por ejemplo, en OPi Zero y Raspberry, se leen esos valores)
+    if(temp >= 1000)
+        temp = temp/1000;
+    
     return temp; // Devolvemos el valor de temperatura leida
 }
 
