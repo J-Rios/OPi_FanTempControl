@@ -3,7 +3,7 @@
 /* Descripcion: Control automático de ventilador segun temperatura */
 /* Autor: JRios                                                    */
 /* Fecha: 20/06/2017                                               */
-/* Version: 1.0.1                                                  */
+/* Version: 1.0.2                                                  */
 /*******************************************************************/
 
 // Librerias
@@ -15,9 +15,12 @@
 
 // Definiciones (modificables a antojo del usuario)
 #define PIN_PWM   7                                       // Pin PWM numero 7 (PA6)
+#define PWM_MIN   0                                       // Valor PWM minimo
+#define PWM_MID   512                                     // Valor PWM intermedio [poner a 750 para Raspberry Pi]
+#define PWM_MAX 1023                                      // Valor PWM maximo
 #define DIFF_TEMP 2                                       // Diferencia de temperatura minima entre lecturas (2ºC)
-#define TEMP_LOW  55                                      // Valor umbral de temperatura bajo (55ºC)
-#define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC)
+#define TEMP_LOW  55                                      // Valor umbral de temperatura bajo (55ºC) [Poner a 50 para Raspberry Pi]
+#define TEMP_HIGH 68                                      // Valor umbral de temperatura alto (68ºC) [Poner a 60/65 para Raspberry Pi]
 #define T_READS   5                                       // Tiempo de espera entre lecturas de temperatura (5s)
 #define FILE_TEMP "/sys/class/thermal/thermal_zone0/temp" // Ruta y nombre del archivo de acceso a la temperatura
 
@@ -38,26 +41,26 @@ int main(void)
 	T_state state_last, state_now;
 	
 	wiringPiSetup();
-	softPwmCreate(PIN_PWM, 0, 1023);
+	softPwmCreate(PIN_PWM, PWM_MIN, PWM_MAX);
 	
-	softPwmWrite(PIN_PWM, 0); // Ventilador apagado
+	softPwmWrite(PIN_PWM, PWM_MIN); // Ventilador apagado
 	state_now = OFF;
 	state_last = OFF;
 	
 	temp_now = readTemp((char*)FILE_TEMP); // Leer temperatura
 	if((temp_now < TEMP_LOW) && (state_last != OFF)) // Temperatura menor que TEMP_LOW (55ºC) y estado anterior distinto
 	{
-		softPwmWrite(PIN_PWM, 0); // Ventilador apagado
+		softPwmWrite(PIN_PWM, PWM_MIN); // Ventilador apagado
 		state_now = OFF; // Estado actual: Ventilador apagado
 	}
 	else if(((temp_now >= TEMP_LOW) && (temp_now <= TEMP_HIGH)) && (state_last != SLOW)) // Temperatura entre TEMP_LOW y TEMP_HIGH (55ºC - 70ºC) y estado anterior distinto
 	{
-		softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
+		softPwmWrite(PIN_PWM, PWM_MID); // Ventilador al 50%
 		state_now = SLOW; // Estado actual: Ventilador al 50%
 	}
 	else if((temp_now > TEMP_HIGH) && (state_last != FAST)) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
 	{
-		softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
+		softPwmWrite(PIN_PWM, PWM_MAX); // Ventilador al 100%
 		state_now = FAST; // Estado actual: Ventilador al 100%
 	}
 	temp_last = temp_now; // Guardar la ultima lectura de temperatura (cuando se ha configurado el ventilador)
@@ -72,17 +75,17 @@ int main(void)
 		{
 			if((temp_now < TEMP_LOW) && (state_last != OFF)) // Temperatura menor que TEMP_LOW (55ºC) y estado anterior distinto
 			{
-				softPwmWrite(PIN_PWM, 0); // Ventilador apagado
+				softPwmWrite(PIN_PWM, PWM_MIN); // Ventilador apagado
 				state_now = OFF; // Estado actual: Ventilador apagado
 			}
 			else if(((temp_now >= TEMP_LOW) && (temp_now <= TEMP_HIGH)) && (state_last != SLOW)) // Temperatura entre TEMP_LOW y TEMP_HIGH (55ºC - 70ºC) y estado anterior distinto
 			{
-				softPwmWrite(PIN_PWM, 512); // Ventilador al 50%
+				softPwmWrite(PIN_PWM, PWM_MID); // Ventilador al 50%
 				state_now = SLOW; // Estado actual: Ventilador al 50%
 			}
 			else if((temp_now > TEMP_HIGH) && (state_last != FAST)) // Temperatura mayor que TEMP_HIGH (70ºC) y estado anterior distinto
 			{
-				softPwmWrite(PIN_PWM, 1023); // Ventilador al 100%
+				softPwmWrite(PIN_PWM, PWM_MAX); // Ventilador al 100%
 				state_now = FAST; // Estado actual: Ventilador al 100%
 			}
 			
